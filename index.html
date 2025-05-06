@@ -1,0 +1,236 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe - DANZCOXZZZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #000000, #0f0f3d);
+      color: #00ffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      animation: bgPulse 10s infinite alternate;
+    }
+    @keyframes bgPulse {
+      0% { background-color: #000; }
+      100% { background-color: #111133; }
+    }
+    h1 {
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a40);
+      color: #00ffff;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      box-shadow: 0 0 12px #00ffff88, 0 0 24px #00ffff55;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #00ffff33, transparent);
+      transition: all 0.5s ease;
+    }
+    button:hover::after {
+      left: 100%;
+    }
+    button:hover {
+      background: #00ffff;
+      color: #000;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffffaa;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 110px);
+      grid-template-rows: repeat(3, 110px);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .cell {
+      background: linear-gradient(145deg, #0a0a23, #1c1c3c);
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      border-radius: 15px;
+      box-shadow: inset 0 0 12px #00ffff55, 0 0 8px #00ffff55;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+    .cell:hover {
+      background: #00ffff22;
+      transform: scale(1.08);
+    }
+    #status {
+      font-size: 1.4rem;
+      text-shadow: 0 0 10px #00ffff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe - <span style="color:#f0f">DANZCOXZZZ</span></h1>
+  <div class="controls">
+    <button onclick="startGame('2p')">2 Player</button>
+    <button onclick="startGame('easy')">Bot Easy</button>
+    <button onclick="startGame('medium')">Bot Medium</button>
+    <button onclick="startGame('hard')">Bot Hard</button>
+  </div>
+  <div class="board" id="board"></div>
+  <div id="status"></div>  <script>
+    const boardElement = document.getElementById('board');
+    const statusElement = document.getElementById('status');
+    let board = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let gameMode = '2p';
+    let gameOver = false;
+
+    const winCombos = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function startGame(mode) {
+      board = Array(9).fill(null);
+      currentPlayer = 'X';
+      gameMode = mode;
+      gameOver = false;
+      statusElement.textContent = `Giliran: ${currentPlayer}`;
+      renderBoard();
+      if (gameMode !== '2p' && currentPlayer === 'O') botMove();
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = '';
+      board.forEach((val, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = val || '';
+        cell.onclick = () => makeMove(idx);
+        boardElement.appendChild(cell);
+      });
+    }
+
+    function makeMove(i) {
+      if (gameOver || board[i]) return;
+      board[i] = currentPlayer;
+      renderBoard();
+      if (checkWin(currentPlayer)) {
+        statusElement.textContent = `${currentPlayer} menang!`;
+        gameOver = true;
+        return;
+      }
+      if (board.every(cell => cell)) {
+        statusElement.textContent = `Seri!`;
+        gameOver = true;
+        return;
+      }
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      statusElement.textContent = `Giliran: ${currentPlayer}`;
+      if (gameMode !== '2p' && currentPlayer === 'O') setTimeout(botMove, 400);
+    }
+
+    function checkWin(player) {
+      return winCombos.some(combo => combo.every(i => board[i] === player));
+    }
+
+    function botMove() {
+      let index;
+      if (gameMode === 'easy') {
+        const empty = board.map((v, i) => v ? null : i).filter(v => v !== null);
+        index = empty[Math.floor(Math.random() * empty.length)];
+      } else if (gameMode === 'medium') {
+        index = mediumBot();
+      } else {
+        index = minimax(board, 'O').index;
+      }
+      if (index !== undefined) makeMove(index);
+    }
+
+    function mediumBot() {
+      for (let combo of winCombos) {
+        const [a, b, c] = combo;
+        const line = [board[a], board[b], board[c]];
+        if (line.filter(x => x === 'O').length === 2 && line.includes(null)) return combo[line.indexOf(null)];
+        if (line.filter(x => x === 'X').length === 2 && line.includes(null)) return combo[line.indexOf(null)];
+      }
+      const empty = board.map((v, i) => v ? null : i).filter(v => v !== null);
+      return empty[Math.floor(Math.random() * empty.length)];
+    }
+
+    function minimax(newBoard, player) {
+      const availSpots = newBoard.map((v, i) => v ? null : i).filter(v => v !== null);
+      if (checkWin('X')) return {score: -10};
+      if (checkWin('O')) return {score: 10};
+      if (availSpots.length === 0) return {score: 0};
+
+      const moves = [];
+      for (let i of availSpots) {
+        const move = {};
+        move.index = i;
+        newBoard[i] = player;
+
+        const result = minimax(newBoard, player === 'O' ? 'X' : 'O');
+        move.score = result.score;
+
+        newBoard[i] = null;
+        moves.push(move);
+      }
+
+      let bestMove;
+      if (player === 'O') {
+        let bestScore = -Infinity;
+        for (let m of moves) {
+          if (m.score > bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        }
+      } else {
+        let bestScore = Infinity;
+        for (let m of moves) {
+          if (m.score < bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        }
+      }
+      return bestMove;
+    }
+
+    startGame('2p');
+  </script></body>
+</html>

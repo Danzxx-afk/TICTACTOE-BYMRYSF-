@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -95,32 +94,9 @@
       background: #00ffff22;
       transform: scale(1.08);
     }
-    .highlight {
-      background: #ff00ff66;
-      box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
-    }
     #status {
       font-size: 1.4rem;
       text-shadow: 0 0 10px #00ffff;
-    }
-    .popup {
-      background: rgba(0, 0, 0, 0.8);
-      color: #00ffff;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px #00ffff;
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-    .popup button {
-      background: #ff00ff;
-      border-radius: 12px;
-      padding: 10px;
-      margin-top: 20px;
     }
   </style>
 </head>
@@ -133,16 +109,9 @@
     <button onclick="startGame('hard')">Bot Hard</button>
   </div>
   <div class="board" id="board"></div>
-  <div id="status"></div>
-  <div class="popup" id="popup">
-    <h2 id="popupMessage"></h2>
-    <button onclick="restartGame()">Play Again</button>
-  </div>
-  <script>
+  <div id="status"></div>  <script>
     const boardElement = document.getElementById('board');
     const statusElement = document.getElementById('status');
-    const popup = document.getElementById('popup');
-    const popupMessage = document.getElementById('popupMessage');
     let board = Array(9).fill(null);
     let currentPlayer = 'X';
     let gameMode = '2p';
@@ -153,12 +122,6 @@
       [0,3,6],[1,4,7],[2,5,8],
       [0,4,8],[2,4,6]
     ];
-
-    const audio = {
-      click: new Audio('https://www.soundjay.com/button/beep-07.wav'),
-      win: new Audio('https://www.soundjay.com/button/beep-09.wav'),
-      gameOver: new Audio('https://www.soundjay.com/button/beep-10.wav')
-    };
 
     function startGame(mode) {
       board = Array(9).fill(null);
@@ -183,22 +146,16 @@
 
     function makeMove(i) {
       if (gameOver || board[i]) return;
-      audio.click.play();
       board[i] = currentPlayer;
       renderBoard();
       if (checkWin(currentPlayer)) {
-        highlightWinningCells(currentPlayer);
         statusElement.textContent = `${currentPlayer} menang!`;
         gameOver = true;
-        audio.win.play();
-        showPopup(`${currentPlayer} menang!`);
         return;
       }
       if (board.every(cell => cell)) {
         statusElement.textContent = `Seri!`;
         gameOver = true;
-        audio.gameOver.play();
-        showPopup(`Seri!`);
         return;
       }
       currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
@@ -208,17 +165,6 @@
 
     function checkWin(player) {
       return winCombos.some(combo => combo.every(i => board[i] === player));
-    }
-
-    function highlightWinningCells(player) {
-      winCombos.forEach(combo => {
-        if (combo.every(i => board[i] === player)) {
-          combo.forEach(i => {
-            const cell = boardElement.children[i];
-            cell.classList.add('highlight');
-          });
-        }
-      });
     }
 
     function botMove() {
@@ -285,17 +231,6 @@
       return bestMove;
     }
 
-    function showPopup(message) {
-      popupMessage.textContent = message;
-      popup.style.display = 'block';
-    }
-
-    function restartGame() {
-      popup.style.display = 'none';
-      startGame(gameMode);
-    }
-
     startGame('2p');
-  </script>
-</body>
+  </script></body>
 </html>
